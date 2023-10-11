@@ -8,9 +8,11 @@ function createWindow() {
     win = new BrowserWindow({
         width: 640,
         height: height,
+        icon: 'res/icon.ico',
         webPreferences: {
             nodeIntegration: false
-        }
+        },
+        autoHideMenuBar: true
     })
 
     // Load the web
@@ -61,7 +63,7 @@ function focusInput(inputId) {
 }
 
 app.whenReady().then(() => {
-    tray = new Tray("icon-color-inverted.png")
+    tray = new Tray("res/icon.ico")
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Show App', click: function () {
