@@ -22,14 +22,22 @@ function createWindow() {
     // hotkey to focus on the prompt input box
     localShortcut.register(win, 'CmdOrCtrl+I', () => {
         if (win) {
-            win.webContents.executeJavaScript(focusInput('prompt-textarea')).then(() => {
+            win.webContents.executeJavaScript(focusInput()).then(() => {
             });
+        }
+    })
+
+    // hotkey to open/close sidebar
+    localShortcut.register(win, 'CmdOrCtrl+Tab', () => {
+        if (win) {
+            win.webContents.executeJavaScript(toggleSidebar()).then(() => {
+            })
         }
     })
 
     win.on('close', () => {
         localShortcut.unregisterAll(win);
-        console.log("All local shortcuts unregistered.")
+        console.info("All local shortcuts unregistered.")
     });
 }
 
@@ -46,19 +54,42 @@ function toggleWindow() {
     }
 }
 
-// Simulate clicking a button with a certain ID
-function clickButton(buttonId) {
+function toggleSidebar() {
     return `
-        const button = document.getElementById("${buttonId}");
-        if (button) button.click();
-    `;
+        (() => {
+            const allSpansWithSrOnly = Array.from(document.querySelectorAll('span.sr-only'));
+        
+            const closeButton = allSpansWithSrOnly.find(s => {
+                return s.outerText === 'Close sidebar';
+            })
+            if (closeButton) {
+                console.debug("Close sidebar.");
+                closeButton.click();
+            } else {
+                const openButton = allSpansWithSrOnly.find(s => {
+                    return s.outerText === 'Open sidebar';
+                })
+                if (openButton) {
+                    console.debug("Open sidebar.");
+                    openButton.click();
+                } else {
+                    console.debug('No sidebar button found. All sr-only spans: ', allSpansWithSrOnly);
+                }
+            }
+        }) ();
+    `
 }
 
-// Simulate focusing on an input box with a certain ID
-function focusInput(inputId) {
+// focusing on the prompt input box
+function focusInput() {
     return `
-        const input = document.getElementById("${inputId}");
-        if (input) input.focus();
+        (() => {
+            const input = document.getElementById("prompt-textarea");
+            if (input) {
+                console.debug("Focus on prompt input.");
+                input.focus();
+            }
+        }) ();
     `;
 }
 
@@ -87,5 +118,5 @@ app.whenReady().then(() => {
 
 app.on('will-quit', () => {
     globalShortcut.unregisterAll();
-    console.log("All global shortcuts unregistered.")
+    console.info("All global shortcuts unregistered.")
 });
