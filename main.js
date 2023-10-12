@@ -35,6 +35,14 @@ function createWindow() {
         }
     })
 
+    // hotkey to start new chat
+    localShortcut.register(win, 'CmdOrCtrl+N', () => {
+        if (win) {
+            win.webContents.executeJavaScript(newChat()).then(() => {
+            });
+        }
+    });
+
     win.on('close', () => {
         localShortcut.unregisterAll(win);
         console.info("All local shortcuts unregistered.")
@@ -80,6 +88,18 @@ function toggleSidebar() {
     `
 }
 
+function newChat() {
+    return `
+        (() => {
+            const newChatButton = document.querySelector('button.px-3');
+            if (newChatButton) {
+                console.debug("Start new chat.");
+                newChatButton.click();
+            }
+        }) ();
+    `;
+}
+
 // focusing on the prompt input box
 function focusInput() {
     return `
@@ -94,7 +114,7 @@ function focusInput() {
 }
 
 app.whenReady().then(() => {
-    tray = new Tray("res/icon.ico")
+    let tray = new Tray("res/icon.ico")
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Show App', click: function () {
