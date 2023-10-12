@@ -1,5 +1,6 @@
 const {app, BrowserWindow, screen, globalShortcut, Tray, Menu} = require('electron');
 const localShortcut = require('electron-localshortcut');
+const {join} = require("path");
 
 let win;
 
@@ -8,12 +9,12 @@ function createWindow() {
     win = new BrowserWindow({
         width: 640,
         height: height,
-        icon: 'res/icon.ico',
+        icon: join(app.getAppPath(), 'res', 'icon.ico'),
         webPreferences: {
             nodeIntegration: false
         },
         autoHideMenuBar: true
-    })
+    });
 
     // Load the web
     win.loadURL('https://chat.openai.com/').then(() => {
@@ -25,7 +26,7 @@ function createWindow() {
             win.webContents.executeJavaScript(focusInput()).then(() => {
             });
         }
-    })
+    });
 
     // hotkey to open/close sidebar
     localShortcut.register(win, 'CmdOrCtrl+Tab', () => {
@@ -33,12 +34,20 @@ function createWindow() {
             win.webContents.executeJavaScript(toggleSidebar()).then(() => {
             })
         }
-    })
+    });
 
     // hotkey to start new chat
     localShortcut.register(win, 'CmdOrCtrl+N', () => {
         if (win) {
             win.webContents.executeJavaScript(newChat()).then(() => {
+            });
+        }
+    });
+
+    // hotkey to send prompt
+    localShortcut.register(win, 'CmdOrCtrl+Enter', () => {
+        if (win) {
+            win.webContents.executeJavaScript(sendPrompt()).then(() => {
             });
         }
     });
@@ -113,8 +122,20 @@ function focusInput() {
     `;
 }
 
+function sendPrompt() {
+    return `
+        (() => {
+            const sendButton = document.querySelector('button[data-testid="send-button"]');
+            if (sendButton && !sendButton.disabled) {
+                console.debug("Send prompt.");
+                sendButton.click();
+            }
+        }) ();
+    `
+}
+
 app.whenReady().then(() => {
-    let tray = new Tray("res/icon.ico")
+    let tray = new Tray(join(app.getAppPath(), 'res', 'icon.ico'))
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Show App', click: function () {
